@@ -1,3 +1,11 @@
+/* ===== Persist data with LevelDB ===================================
+|  Learn more: level: https://github.com/Level/level     |
+|  =============================================================*/
+
+const level = require('level');
+const chainDB = './chaindata';
+const db = level(chainDB);
+
 /* ===== SHA256 with Crypto-js ===============================
 |  Learn more: Crypto-js: https://github.com/brix/crypto-js  |
 |  =========================================================*/
