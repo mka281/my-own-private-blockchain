@@ -58,11 +58,10 @@ class Blockchain{
 		await this.addLevelDBData(newBlock.height, JSON.stringify(newBlock))
   }
 
-
   // Get block height
-    getBlockHeight(){
-      return this.chain.length-1;
-    }
+		getBlockHeight(){
+			return this.chain.length-1;
+		}
 
     // get block
     getBlock(blockHeight){
@@ -111,9 +110,13 @@ class Blockchain{
     }
 
 		// Add data to levelDB with key/value pair
-		addLevelDBData(key,value){
-			db.put(key, value, function(err) {
-				if (err) return console.log('Block ' + key + ' submission failed', err);
-			})
+		addLevelDBData (key, value) {
+			return new Promise (resolve, reject) => {
+				db.put(key, value, (err) {
+					if (err) { reject (err) };
+					resolve (value)
+				})
+			}
 		}
+
 }
