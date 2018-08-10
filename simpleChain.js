@@ -32,9 +32,12 @@ class Block{
 |  ================================================*/
 
 class Blockchain{
-  constructor(){
-    this.chain = [];
-    this.addBlock(new Block("First block in the chain - Genesis block"));
+	constructor() {
+		this.getBlockHeight().then(blockHeight => {
+			if (blockHeight == 0) {
+				this.addBlock(new Block('First block in the chain - Genesis block"'))
+			}
+		})
   }
 
   // Add new block
