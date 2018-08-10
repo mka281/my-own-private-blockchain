@@ -40,21 +40,24 @@ class Blockchain{
 		})
   }
 
-  // Add new block
-  addBlock(newBlock){
+	// Add new block
+  async addBlock(newBlock){
     // Block height
-    newBlock.height = this.chain.length;
+    const blockHeight = await this.getBlockHeight();
+		newBlock.height = blockHeight + 1;
     // UTC timestamp
     newBlock.time = new Date().getTime().toString().slice(0,-3);
     // previous block hash
-    if(this.chain.length>0){
-      newBlock.previousBlockHash = this.chain[this.chain.length-1].hash;
+    if(newBlock.height > 0) {
+			const previousBlock = await this.getBlock(blockHeight);
+      newBlock.previousBlockHash = previousBlock.hash;
     }
     // Block hash with SHA256 using newBlock and converting to a string
     newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
-    // Adding block object to chain
-  	this.chain.push(newBlock);
+    // Adding block object to levelDB
+		await this.addLevelDBData(newBlock.height, JSON.stringify(newBlock))
   }
+
 
   // Get block height
     getBlockHeight(){
@@ -106,4 +109,11 @@ class Blockchain{
         console.log('No errors detected');
       }
     }
+
+		// Add data to levelDB with key/value pair
+		addLevelDBData(key,value){
+			db.put(key, value, function(err) {
+				if (err) return console.log('Block ' + key + ' submission failed', err);
+			})
+		}
 }
