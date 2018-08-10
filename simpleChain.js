@@ -69,24 +69,24 @@ class Blockchain{
     return JSON.parse(await this.getBlockFromDB(blockHeight));
   }
 
-    // validate block
-    validateBlock(blockHeight){
-      // get block object
-      let block = this.getBlock(blockHeight);
-      // get block hash
-      let blockHash = block.hash;
-      // remove block hash to test block integrity
-      block.hash = '';
-      // generate block hash
-      let validBlockHash = SHA256(JSON.stringify(block)).toString();
-      // Compare
-      if (blockHash===validBlockHash) {
-          return true;
-        } else {
-          console.log('Block #'+blockHeight+' invalid hash:\n'+blockHash+'<>'+validBlockHash);
-          return false;
-        }
+  // Validate block
+  async validateBlock(blockHeight) {
+		// get block object
+    let block = await this.getBlock(blockHeight);
+    // get block hash
+    let blockHash = block.hash;
+    // remove block hash to test block integrity
+    block.hash = '';
+    // generate block hash
+    let validBlockHash = SHA256(JSON.stringify(block)).toString();
+    // compare
+    if (blockHash===validBlockHash) {
+			return true;
+    } else {
+      console.log(`Block #${blockHeight} invalid hash:\n${blockHash}<>${validBlockHash}`);
+      return false;
     }
+  }
 
    // Validate blockchain
     validateChain(){
