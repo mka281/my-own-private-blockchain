@@ -63,11 +63,11 @@ class Blockchain{
 			return await this.getBlockHeightFromDB();
 		}
 
-    // get block
-    getBlock(blockHeight){
-      // return object as a single string
-      return JSON.parse(JSON.stringify(this.chain[blockHeight]));
-    }
+  // Get block
+  async getBlock(blockHeight){
+    // return object as a single string
+    return JSON.parse(await this.getBlockFromDB(blockHeight));
+  }
 
     // validate block
     validateBlock(blockHeight){
@@ -111,13 +111,21 @@ class Blockchain{
 
 		// Add data to levelDB with key/value pair
 		addLevelDBData (key, value) {
-			return new Promise (resolve, reject) => {
+			return new Promise ((resolve, reject) => {
 				db.put(key, value, (err) => {
-					if (err) { reject (err) };
-					resolve (value)
-				})
-			}
+					err ? reject(err) : resolve(`Block #${key} has been added`);
+				});
+			})
 		}
+
+		// Get data from levelDB with key
+		getLevelDBData(key) {
+			return new Promise ((resolve, reject) => {
+				db.get(key, (err, value) => {
+					err ? reject(err) : resolve(value)
+			  });
+			});
+		};
 
 		// Get block height from levelDB
 		getBlockHeightFromDB() {
@@ -128,6 +136,7 @@ class Blockchain{
 				.on('error', (err) => { reject (err); })
 				.on('close', () => { resolve (height) });
 			});
-		}
+		};
+
 
 }
