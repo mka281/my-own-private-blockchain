@@ -59,8 +59,8 @@ class Blockchain{
   }
 
   // Get block height
-		getBlockHeight(){
-			return this.chain.length-1;
+	async getBlockHeight(){
+			return await this.getBlockHeightFromDB();
 		}
 
     // get block
@@ -112,11 +112,22 @@ class Blockchain{
 		// Add data to levelDB with key/value pair
 		addLevelDBData (key, value) {
 			return new Promise (resolve, reject) => {
-				db.put(key, value, (err) {
+				db.put(key, value, (err) => {
 					if (err) { reject (err) };
 					resolve (value)
 				})
 			}
+		}
+
+		// Get block height from levelDB
+		getBlockHeightFromDB() {
+			return new Promise((resolve, reject) => {
+				let height = -1;
+		    db.createReadStream()
+				.on('data', (data) => { height++; })
+				.on('error', (err) => { reject (err); })
+				.on('close', () => { resolve (height) });
+			});
 		}
 
 }
