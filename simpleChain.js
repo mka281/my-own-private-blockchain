@@ -1,36 +1,24 @@
 /* ===== Persist data with LevelDB ===================================
 |  Learn more: level: https://github.com/Level/level     |
 |  =============================================================*/
-
 const level = require('level');
 const chainDB = './chaindata';
 const db = level(chainDB);
 
+
 /* ===== SHA256 with Crypto-js ===============================
 |  Learn more: Crypto-js: https://github.com/brix/crypto-js  |
 |  =========================================================*/
-
 const SHA256 = require('crypto-js/sha256');
 
 
-/* ===== Block Class ==============================
-|  Class with a constructor for block 			   |
-|  ===============================================*/
+/* ===== Block Class =============================== */
+const Block = require('./block')
 
-class Block{
-	constructor(data) {
-     this.hash = "",
-     this.height = 0,
-     this.body = data,
-     this.time = 0,
-     this.previousBlockHash = ""
-  }
-}
 
 /* ===== Blockchain Class ==========================
 |  Class with a constructor for new blockchain 		|
 |  ================================================*/
-
 class Blockchain{
 	constructor() {
 		this.getBlockHeight().then(blockHeight => {
@@ -160,7 +148,6 @@ class Blockchain{
 |    Bitcoin blockchain adds 8640 blocks per day                               |
 |     ( new block every 10 minutes )                                           |
 |  ===========================================================================*/
-
 let blockchain = new Blockchain();
 
 (function theLoop (i) {
