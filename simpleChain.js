@@ -88,26 +88,34 @@ class Blockchain{
     }
   }
 
-   // Validate blockchain
-    validateChain(){
-      let errorLog = [];
-      for (var i = 0; i < this.chain.length-1; i++) {
-        // validate block
-        if (!this.validateBlock(i))errorLog.push(i);
-        // compare blocks hash link
-        let blockHash = this.chain[i].hash;
-        let previousHash = this.chain[i+1].previousBlockHash;
-        if (blockHash!==previousHash) {
-          errorLog.push(i);
-        }
-      }
-      if (errorLog.length>0) {
-        console.log('Block errors = ' + errorLog.length);
-        console.log('Blocks: '+errorLog);
-      } else {
-        console.log('No errors detected');
+  // Validate blockchain
+  async validateChain() {
+    let errorLog = [];
+
+		blockHeight = await this.getBlockHeight();
+
+    for (let i = 0; i < blockHeight; i++) {
+      // validate block
+      if (!this.validateBlock(i)) errorLog.push(i);
+
+			// compare blocks hash link
+			block = await this.getBlockFromDB(i);
+      let blockHash = block.hash;
+			nextBlock = await this.getBlockFromDB(i+1);
+      let previousHash = nextBlock.previousBlockHash;
+
+			if (blockHash !== previousHash) {
+        errorLog.push(i);
       }
     }
+
+    if (errorLog.length > 0) {
+      console.log(`Block errors = ${errorLog.length}`);
+      console.log(`Blocks: ${errorLog}`);
+    } else {
+      console.log('No errors detected');
+    }
+  }
 
 		// Add data to levelDB with key/value pair
 		addLevelDBData (key, value) {
