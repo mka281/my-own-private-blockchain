@@ -18,13 +18,13 @@ const SHA256 = require('crypto-js/sha256');
 |  ===============================================*/
 
 class Block{
-	constructor(data){
+	constructor(data) {
      this.hash = "",
      this.height = 0,
      this.body = data,
      this.time = 0,
      this.previousBlockHash = ""
-    }
+  }
 }
 
 /* ===== Blockchain Class ==========================
@@ -36,19 +36,20 @@ class Blockchain{
 		this.getBlockHeight().then(blockHeight => {
 			if (blockHeight == 0) {
 				this.addBlock(new Block('First block in the chain - Genesis block"'))
-			}
-		})
-  }
+				.then(() => console.log('Added'))
+			};
+		});
+  };
 
 	// Add new block
-  async addBlock(newBlock){
+  async addBlock(newBlock) {
     // Block height
-    const blockHeight = await this.getBlockHeight();
+    const blockHeight = parseInt(await this.getBlockHeight());
 		newBlock.height = blockHeight + 1;
     // UTC timestamp
     newBlock.time = new Date().getTime().toString().slice(0,-3);
     // previous block hash
-    if(newBlock.height > 0) {
+    if (newBlock.height > 0) {
 			const previousBlock = await this.getBlock(blockHeight);
       newBlock.previousBlockHash = previousBlock.hash;
     }
@@ -56,17 +57,18 @@ class Blockchain{
     newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
     // Adding block object to levelDB
 		await this.addLevelDBData(newBlock.height, JSON.stringify(newBlock))
+		console.log(`Block ${newBlock.height} added`)
   }
 
   // Get block height
 	async getBlockHeight(){
-			return await this.getBlockHeightFromDB();
-		}
+		return await this.getBlockHeightFromDB();
+	}
 
   // Get block
-  async getBlock(blockHeight){
+  async getBlock(blockHeight) {
     // return object as a single string
-    return JSON.parse(await this.getBlockFromDB(blockHeight));
+    return JSON.parse(await this.getLevelDBData(blockHeight));
   }
 
   // Validate block
@@ -99,9 +101,9 @@ class Blockchain{
       if (!this.validateBlock(i)) errorLog.push(i);
 
 			// compare blocks hash link
-			block = await this.getBlockFromDB(i);
+			let block = await this.getBlockFromDB(i);
       let blockHash = block.hash;
-			nextBlock = await this.getBlockFromDB(i+1);
+			let nextBlock = await this.getBlockFromDB(i+1);
       let previousHash = nextBlock.previousBlockHash;
 
 			if (blockHash !== previousHash) {
@@ -117,34 +119,53 @@ class Blockchain{
     }
   }
 
-		// Add data to levelDB with key/value pair
-		addLevelDBData (key, value) {
-			return new Promise ((resolve, reject) => {
-				db.put(key, value, (err) => {
-					err ? reject(err) : resolve(`Block #${key} has been added`);
-				});
-			})
-		}
-
-		// Get data from levelDB with key
-		getLevelDBData(key) {
-			return new Promise ((resolve, reject) => {
-				db.get(key, (err, value) => {
-					err ? reject(err) : resolve(value)
-			  });
+	// Add data to levelDB with key/value pair
+	addLevelDBData (key, value) {
+		return new Promise ((resolve, reject) => {
+			db.put(key, value, (err) => {
+				err ? reject(err) : resolve(`Block #${key} has been added`);
 			});
-		};
+		});
+	};
 
-		// Get block height from levelDB
-		getBlockHeightFromDB() {
-			return new Promise((resolve, reject) => {
-				let height = -1;
-		    db.createReadStream()
-				.on('data', (data) => { height++; })
-				.on('error', (err) => { reject (err); })
-				.on('close', () => { resolve (height) });
-			});
-		};
+	// Get data from levelDB with key
+	getLevelDBData(key) {
+		return new Promise ((resolve, reject) => {
+			db.get(key, (err, value) => {
+				err ? reject(err) : resolve(value)
+		  });
+		});
+	};
+
+	// Get block height from levelDB
+	getBlockHeightFromDB() {
+		return new Promise((resolve, reject) => {
+			let height = -1;
+	    db.createReadStream()
+			.on('data', (data) => { height++; })
+			.on('error', (err) => { reject (err); })
+			.on('close', () => { resolve (height) });
+		});
+	};
+};
 
 
-}
+/* ===== Testing ==============================================================|
+|  - Self-invoking function to add blocks to chain                             |
+|  - Learn more:                                                               |
+|   https://scottiestech.info/2014/07/01/javascript-fun-looping-with-a-delay/  |
+|                                                                              |
+|  * 100 Milliseconds loop = 36,000 blocks per hour                            |
+|     (13.89 hours for 500,000 blocks)                                         |
+|    Bitcoin blockchain adds 8640 blocks per day                               |
+|     ( new block every 10 minutes )                                           |
+|  ===========================================================================*/
+
+let blockchain = new Blockchain();
+
+(function theLoop (i) {
+  setTimeout(() => {
+    blockchain.addBlock(new Block('Testing data'));
+    if (--i) theLoop(i);
+  }, 100);
+})(10);
