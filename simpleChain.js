@@ -22,7 +22,7 @@ const Block = require('./block')
 class Blockchain{
 	constructor() {
 		this.getBlockHeight().then(blockHeight => {
-			if (blockHeight == 0) {
+			if (blockHeight == -1) {
 				this.addBlock(new Block('First block in the chain - Genesis block"'))
 				.then(() => console.log('Added'))
 			};
