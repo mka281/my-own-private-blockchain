@@ -106,6 +106,8 @@ class Blockchain {
         errorLog.push(i);
       }
     }
+    // validate last block in the chain
+    if (!this.validateBlock(blockHeight)) errorLog.push(blockHeight);
 
     if (errorLog.length > 0) {
       console.log(`Block errors = ${errorLog.length}`);
@@ -183,6 +185,7 @@ let blockchain = new Blockchain();
 (function theLoop(i) {
   setTimeout(() => {
     blockchain.addBlock(new Block("Testing data"));
+    blockchain.validateChain();
     if (--i) theLoop(i);
   }, 100);
 })(10);
