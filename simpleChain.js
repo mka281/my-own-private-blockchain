@@ -60,6 +60,11 @@ class Blockchain {
     return JSON.parse(await this.getLevelDBData(blockHeight));
   }
 
+  // Get whole chain
+  async getChain() {
+    return await this.getChainFromDB();
+  }
+
   // Validate block
   async validateBlock(blockHeight) {
     // get block object
@@ -133,9 +138,32 @@ class Blockchain {
     return new Promise((resolve, reject) => {
       let height = -1;
       db.createReadStream()
-        .on("data", data => { height++; })
-        .on("error", err => { reject(err); })
-        .on("close", () => { resolve(height); });
+        .on("data", data => {
+          height++;
+        })
+        .on("error", err => {
+          reject(err);
+        })
+        .on("close", () => {
+          resolve(height);
+        });
+    });
+  }
+
+  // Get whole chain from levelDB
+  getChainFromDB() {
+    return new Promise((resolve, reject) => {
+      let chain = {};
+      db.createReadStream()
+        .on("data", data => {
+          chain[data.key] = data.value;
+        })
+        .on("error", err => {
+          reject(err);
+        })
+        .on("close", () => {
+          resolve(chain);
+        });
     });
   }
 }
